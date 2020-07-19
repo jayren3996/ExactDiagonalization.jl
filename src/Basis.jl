@@ -6,8 +6,16 @@ struct Basis{T<:AbstractVector{<:Integer}}
 end
 basis(l::Int64, d::Int64) = Basis(zeros(Int64, l),d,l)
 
-list2num(v::AbstractVector,d::Integer,l::Integer)=sum(v[i]*d^(l-i) for i=1:l)+1
-function num2list!(v::AbstractVector,i::Integer,d::Integer,l::Integer)
+function list2num(v::AbstractVector,
+                  d::Integer,
+                  l::Integer)
+    sum(v[i]*d^(l-i) for i=1:l)+1
+end
+
+function num2list!(v::AbstractVector,
+                   i::Integer,
+                   d::Integer,
+                   l::Integer)
     i -= 1
     for j=1:l
         n,i = divrem(i, d^(l-j))
@@ -20,13 +28,28 @@ change!(s::Basis, i::Integer) = num2list!(s.vec, i, s.d, s.l)
 change!(s::Basis, vec::AbstractVector{<:Integer}) = (s.vec .= vec)
 copy(s::Basis) = Basis(copy(s.vec), s.d, s.l)
 view(s::Basis, inds) = Basis(view(s.vec, inds), s.d, length(inds))
-
-#--- Filling matrix
-struct Operator{T<:AbstractMatrix}
+#--- operator
+struct Operator{T<:AbstractMatrix, Ti<:AbstractVector{<:Integer}}
     mat::T
-    inds::AbstractVector{Int64}
+    inds::Ti
 end
 
+function chain(ms::AbstractVector{AbstractMatrix},
+               n::Integer;
+               L::Union{Integer,Nothing}=nothing)
+    l = length(ms)
+    if L===nothing L=l end
+    [Operator(ms[i], mod.([i-1:i+n-2], L) .+ 1) for i=1:l]
+end
+
+function chain(m::AbstractMatrix,
+               n::Integer,
+               l::Integer;
+               L::Union{Integer,Nothing}=nothing)
+    if L===nothing L=l end
+    chain(fill(m,l),n,L)
+end
+#--- Filling matrix
 function fillvec!(mj::AbstractVector, s::Basis, o::Operator)
     vs = view(s, o.inds)
     hi = o.mat[index(vs),:]
