@@ -34,12 +34,12 @@ struct Operator{T<:AbstractMatrix, Ti<:AbstractVector{<:Integer}}
     inds::Ti
 end
 
-function chain(ms::AbstractVector{AbstractMatrix},
+function chain(ms::AbstractVector{<:AbstractMatrix},
                n::Integer;
                L::Union{Integer,Nothing}=nothing)
     l = length(ms)
     if L===nothing L=l end
-    [Operator(ms[i], mod.([i-1:i+n-2], L) .+ 1) for i=1:l]
+    [Operator(ms[i], mod.(i-1:i+n-2, L) .+ 1) for i=1:l]
 end
 
 function chain(m::AbstractMatrix,
@@ -47,7 +47,7 @@ function chain(m::AbstractMatrix,
                l::Integer;
                L::Union{Integer,Nothing}=nothing)
     if L===nothing L=l end
-    chain(fill(m,l),n,L)
+    chain(fill(m,l),n,L=L)
 end
 #--- Filling matrix
 function fillvec!(mj::AbstractVector, s::Basis, o::Operator)

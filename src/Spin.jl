@@ -18,3 +18,13 @@ function spinop(s::Char,D::Integer)
 end
 #--- large
 spinop(s::String, D::Integer) = kron([spinop(si,D) for si in s]...)
+function spinop!(mat::AbstractMatrix,
+                 s::Char,
+                 D::Integer,
+                 L::Integer)
+    m = spinop(s,D)
+    #println(typeof(m))
+    op = chain(m,1,L)
+    b = basis(L,D)
+    fillmat!(mat,b,op)
+end

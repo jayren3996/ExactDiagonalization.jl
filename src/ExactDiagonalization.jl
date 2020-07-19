@@ -1,7 +1,7 @@
 module ExactDiagonalization
 
 export Operator, basis, fillmat!
-export spinop
+export spinop, spinop!
 
 using LinearAlgebra
 using SparseArrays
