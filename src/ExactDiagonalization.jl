@@ -1,6 +1,6 @@
 module ExactDiagonalization
 
-export Operator, basis, fillmat!
+export Operator, basis, fillmat!, chain
 export spinop, spinop!
 
 using LinearAlgebra
