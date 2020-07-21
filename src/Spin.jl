@@ -6,7 +6,8 @@ Sx(D::Integer) = (sp=Sp(D); (sp+sp')/2)
 iSy(D::Integer) = (sp=Sp(D); (sp-sp')/2)
 Sy(D::Integer) = (sp=Sp(D); 0.5im*(sp'-sp))
 Sz(D::Integer) = (J=(D-1)/2; sparse(1:D,1:D, J:-1:-J))
-function spinop(s::Char,D::Integer)
+#--- Combine
+function spin(s::Char, D::Integer)
     if s == '+' return Sp(D)
     elseif s == '-' return Sm(D)
     elseif s == 'x' return Sx(D)
@@ -16,15 +17,8 @@ function spinop(s::Char,D::Integer)
     elseif s == '1' return sparse(I,D,D)
     end
 end
-#--- large
-spinop(s::String, D::Integer) = kron([spinop(si,D) for si in s]...)
-function spinop!(mat::AbstractMatrix,
-                 s::Char,
-                 D::Integer,
-                 L::Integer)
-    m = spinop(s,D)
-    #println(typeof(m))
-    op = chain(m,1,L)
-    b = basis(L,D)
-    fillmat!(mat,b,op)
+function spin(s::Char, D::Integer, L::Integer)
+    sop = spin(s, D)
+    operation(fill(sop, L), [[i] for i=1:L], D, L)
 end
+spin(s::String, D::Integer) = kron([spin(si,D) for si in s]...)

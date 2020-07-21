@@ -1,75 +1,76 @@
-#--- product state basis
+"""
+Functions for basis.
+
+The core structure of ExactDiagonalization.jl is the mapping between different
+Basis objects.
+"""
+#--- Type Basis
+"""
+    Basis{T<:AbstractVector{<:Integer}}
+
+Basis object for exact diagonalization. Linear operator can be thought as a
+map from one `Basis` object to another `Basis` object.
+"""
 struct Basis{T<:AbstractVector{<:Integer}}
-    vec::T
-    d::Int64
-    l::Int64
+    bits::T
+    base::Int64
+    len::Int64
 end
-basis(l::Int64, d::Int64) = Basis(zeros(Int64, l),d,l)
+#--- Initiation
+"""
+    basis(len::Integer, base::Integer)
 
-function list2num(v::AbstractVector,
-                  d::Integer,
-                  l::Integer)
-    sum(v[i]*d^(l-i) for i=1:l)+1
+Initiate a zero Basis object with length `len` and with local Hilbert space
+dimension `base`.
+"""
+function basis(base::Integer, len::Integer)
+    Basis(zeros(Int64, len), Int64(base), Int64(len))
 end
+"""
+    basis(bits::AbstractVector{<:Integer}, base::Integer)
 
-function num2list!(v::AbstractVector,
-                   i::Integer,
-                   d::Integer,
-                   l::Integer)
-    i -= 1
-    for j=1:l
-        n,i = divrem(i, d^(l-j))
-        v[j] = n
+Initiate a Basis object with a bit list.
+"""
+function basis(bits::AbstractVector{<:Integer}, base::Integer)
+    Basis(bits, Int64(base), length(bits))
+end
+#--- Convertion between index numbers and bits lists.
+function list2num(bits::AbstractVector, base::Integer, len::Integer)
+    sum(bits[i] * base^(len - i) for i = 1:len) + 1
+end
+function num2list!(
+    bits::AbstractVector,
+    index::Integer,
+    base::Integer,
+    len::Integer,
+)
+    i = index - 1
+    for j = 1:len
+        n, i = divrem(i, base^(len - j))
+        bits[j] = n
     end
 end
+#--- Indexing
+"""
+    index(b::Basis)
 
-index(s::Basis) = list2num(s.vec, s.d, s.l)
-change!(s::Basis, i::Integer) = num2list!(s.vec, i, s.d, s.l)
-change!(s::Basis, vec::AbstractVector{<:Integer}) = (s.vec .= vec)
-copy(s::Basis) = Basis(copy(s.vec), s.d, s.l)
-view(s::Basis, inds) = Basis(view(s.vec, inds), s.d, length(inds))
-#--- operator
-struct Operator{T<:AbstractMatrix, Ti<:AbstractVector{<:Integer}}
-    mat::T
-    inds::Ti
+Return the index number which the `Basis` object represent.
+"""
+function index(b::Basis)
+    list2num(b.bits, b.base, b.len)
 end
-
-function chain(ms::AbstractVector{<:AbstractMatrix},
-               n::Integer;
-               L::Union{Integer,Nothing}=nothing)
-    l = length(ms)
-    if L===nothing L=l end
-    [Operator(ms[i], mod.(i-1:i+n-2, L) .+ 1) for i=1:l]
+#--- Change the Basis
+function change!(b::Basis, index::Integer)
+    num2list!(b.bits, index, b.base, b.len)
 end
-
-function chain(m::AbstractMatrix,
-               n::Integer,
-               l::Integer;
-               L::Union{Integer,Nothing}=nothing)
-    if L===nothing L=l end
-    chain(fill(m,l),n,L=L)
+function change!(b::Basis, bits::AbstractVector{<:Integer})
+    b.bits .= bits
 end
-#--- Filling matrix
-function fillvec!(mj::AbstractVector, s::Basis, o::Operator)
-    vs = view(s, o.inds)
-    hi = o.mat[index(vs),:]
-    for k = 1:size(o.mat,1)
-        change!(vs,k)
-        i = index(s)
-        mj[i] += hi[k]
-    end
+#--- Copy Basis
+function copy(b::Basis)
+    Basis(copy(b.bits), b.base, b.len)
 end
-
-function fillvec!(mj::AbstractVector, s::Basis, ol::AbstractVector{<:Operator})
-    for i = 1:length(ol)
-        cs = copy(s)
-        fillvec!(mj,cs,ol[i])
-    end
-end
-
-function fillmat!(m::AbstractMatrix, s::Basis, ol::AbstractVector{<:Operator})
-    for j = 1:size(m,1)
-        change!(s,j)
-        fillvec!(view(m,:,j),s,ol)
-    end
+#--- View Basis
+function view(b::Basis, inds::AbstractVector)
+    Basis(view(b.bits, inds), b.base, length(inds))
 end
