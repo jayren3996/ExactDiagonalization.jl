@@ -76,12 +76,35 @@ end
     sx = spin('x', 3)
     sy = spin('Y', 3)
     sz = spin('z', 3)
-    # test xxx
-    m1 = kron(sx,I(9)) + kron(I(3), sx, I(3)) + kron(I(9), sx)
-    op = spin('x', 3, 3)
-    m2 = zeros(27,27)
-    fillmat!(m2, op)
-    @test m1 ≈ m2 atol=1e-5
+    # check single spin operators
+    @test sx ≈ [0 sqrt(2) 0;sqrt(2) 0 sqrt(2);0 sqrt(2) 0] ./ 2
+    @test sy ≈ [0 sqrt(2) 0;-sqrt(2) 0 sqrt(2);0 -sqrt(2) 0] ./ 2
+    @test sz ≈ Diagonal([1,0,-1])
+    # 3-site spin
+    mx = kron(sx,I(9)) + kron(I(3), sx, I(3)) + kron(I(9), sx)
+    my = kron(sy,I(9)) + kron(I(3), sy, I(3)) + kron(I(9), sy)
+    mz = kron(sz,I(9)) + kron(I(3), sz, I(3)) + kron(I(9), sz)
+    opx = spin('x', 3, 3)
+    opy = spin('Y', 3, 3)
+    opz = spin('z', 3, 3)
+    ex = Diagonal(ones(27))
+    ey = Diagonal(ones(27))
+    ez = Diagonal(ones(27))
+    # test mul
+    rmat = rand(ComplexF32, 27,27)
+    @test mx ≈ mul(opx,ex) atol=1e-5
+    @test my ≈ mul(opy,ey) atol=1e-5
+    @test mz ≈ mul(opz,ez) atol=1e-5
+    @test mx*rmat ≈ mul(opx,rmat) atol=1e-5
+    @test my*rmat ≈ mul(opy,rmat) atol=1e-5
+    @test mz*rmat ≈ mul(opz,rmat) atol=1e-5
+    # test mulmul
+    @test mx^2 ≈ mul(opx,mul(opx,ex)) atol=1e-5
+    @test my^2 ≈ mul(opy,mul(opy,ey)) atol=1e-5
+    @test mz^2 ≈ mul(opz,mul(opz,ez)) atol=1e-5
+    @test mx^2*rmat ≈ mul(opx,mul(opx,rmat)) atol=1e-5
+    @test my^2*rmat ≈ mul(opy,mul(opy,rmat)) atol=1e-5
+    @test mz^2*rmat ≈ mul(opz,mul(opz,rmat)) atol=1e-5
     # test xyz
     m1 = kron(sx,sy,sz)
     m2 = spin("xYz",3)
