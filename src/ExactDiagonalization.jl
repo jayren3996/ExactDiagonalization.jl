@@ -1,6 +1,6 @@
 module ExactDiagonalization
 
-export operation, fillmat!, mul, mul!, spin
+export Operation, operation, fillmat!, mul, mul!, spin
 
 using LinearAlgebra
 using SparseArrays
