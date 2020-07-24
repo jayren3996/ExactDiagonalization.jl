@@ -29,11 +29,14 @@ end
 @testset "Operator" begin
     m1 = rand(3,3)
     m2 = rand(3,3)
+    mc = rand(ComplexF32,3,3)
     k13 = kron(m1, I(3), m2, I(3))       # answer
     ktt = k13 + kron(I(3), m1, m2, I(3)) # answer
+    ktc = k13 + kron(I(3), m2, mc, I(3)) # answer
     op13 = Operator(kron(m1,m2), [1,3])
     ot13 = operation([kron(m1,m2)],[[1,3]], 3, 4)
     ott = operation([kron(m1,m2), kron(m1,m2)],[[1,3],[2,3]], 3, 4)
+    otc = operation([kron(m1,m2), kron(m2,mc)],[[1,3],[2,3]], 3, 4)
     # test fillvec! for o13
     vec = zeros(81)
     b = basis(3, 4)
@@ -70,6 +73,10 @@ end
     mat = rand(81,3)
     @test mul(ott, vec) ≈ ktt * vec atol=1e-5
     @test mul(ott, mat) ≈ ktt * mat atol=1e-5
+    @test mul(otc, mat) ≈ ktc * mat atol=1e-5
+    # test *
+    @test ott * mat ≈ ktt * mat atol=1e-5
+    @test otc * mat ≈ ktc * mat atol=1e-5
 end
 
 @testset "Spin" begin
