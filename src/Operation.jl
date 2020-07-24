@@ -32,6 +32,15 @@ function operation(
     opts = [Operator(mats[i],inds[i]) for i=1:length(mats)]
     Operation(opts, b)
 end
+function operation(
+    mats::AbstractVector{<:AbstractMatrix},
+    inds::AbstractVector{<:Integer},
+    base::Integer,
+    len::Integer
+)
+    ind = [[i] for i in inds]
+    operation(mats,ind,base,len)
+end
 #--- Apply to vec
 function fillvec!(vec::AbstractVector, op::Operation, j::Integer; c::Number=1)
     len = length(op.opts)

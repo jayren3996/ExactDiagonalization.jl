@@ -19,6 +19,6 @@ function spin(s::Char, D::Integer)
 end
 function spin(s::Char, D::Integer, L::Integer)
     sop = spin(s, D)
-    operation(fill(sop, L), [[i] for i=1:L], D, L)
+    operation(fill(sop, L), 1:L, D, L)
 end
 spin(s::String, D::Integer) = kron([spin(si,D) for si in s]...)
