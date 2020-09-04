@@ -9,6 +9,8 @@ struct Operator{Tm<:AbstractMatrix, Ti<:AbstractVector{<:Integer}}
     mat::Tm
     inds::Ti
 end
+#--- Basic functiond
+*(c::Number, o::Operator) = Operator(c * o.mat, o.inds)
 #--- Filling vectors
 function fillvec!(vec::AbstractVector, o::Operator, b::Basis; c::Number=1)
     vb = view(b, o.inds)
