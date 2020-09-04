@@ -22,6 +22,8 @@ function covmat(ol::Vector{<:Operation}, v::AbstractMatrix)
         v1 = ol[i] * v
         for j=i:n 
             v2 = ol[j] * v
+            ele = real(sum(conj.(v1) .* v2))
+            ele -= real( sum(conj.(v) .* v1) * sum(conj.(v) .* v2) )
             cm[i,j] = real(sum(v1' .* v2) - sum(v' .* v1)*sum(v' .* v2))
         end
     end
