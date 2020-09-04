@@ -22,9 +22,7 @@ function covmat(ol::Vector{<:Operation}, v::AbstractMatrix)
         v1 = ol[i] * v
         for j=i:n 
             v2 = ol[j] * v
-            for k=1:num 
-                cm[i,j] += real(dot(v1[:,k], v2[:,k]) - dot(v[:,k], v1[:,k]) * dot(v[:,k], v2[:,k]))
-            end
+            cm[i,j] = real(sum(v1' .* v2) - sum(v' .* v1)*sum(v' .* v2))
         end
     end
     Hermitian(cm) ./ num
