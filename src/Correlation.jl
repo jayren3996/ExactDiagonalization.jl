@@ -16,14 +16,14 @@ end
 
 function covmat(ol::Vector{<:Operation}, v::AbstractMatrix)
     n = length(ol)
-    cm = zeros(ComplexF64, n, n)
+    cm = zeros(Float64, n, n)
     num = size(v, 2)
     for i=1:n 
         v1 = ol[i] * v
         for j=i:n 
             v2 = ol[j] * v
             for k=1:num 
-                cm[i,j] += dot(v1[:,k], v2[:,k]) - dot(v[:,k], v1[:,k]) * dot(v[:,k], v2[:,k])
+                cm[i,j] += real(dot(v1[:,k], v2[:,k]) - dot(v[:,k], v1[:,k]) * dot(v[:,k], v2[:,k]))
             end
         end
     end
