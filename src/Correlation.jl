@@ -1,4 +1,4 @@
-
+export covmat
 function covmat(ol::Vector{<:Operation}, v::AbstractVector)
     n = length(ol)
     cm = Array{ComplexF64}(undef, n, n)

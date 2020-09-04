@@ -42,6 +42,7 @@ end
 #-----------------------------------------------------------------------------------------------------
 # Type: Operation
 #-----------------------------------------------------------------------------------------------------
+export Operation
 struct Operation{
     T1<:AbstractVector{<:Operator}, 
     T2<:Basis
@@ -52,6 +53,7 @@ end
 #-----------------------------------------------------------------------------------------------------
 # Operation initiate
 #-----------------------------------------------------------------------------------------------------
+export operation
 function operation(
     mats::AbstractVector{<:AbstractMatrix},
     inds::AbstractVector{<:AbstractVector},
@@ -63,6 +65,7 @@ function operation(
     Operation(opts, b)
 end
 #-----------------------------------------------------------------------------------------------------
+export onsite_operation
 function onsite_operation(
     mats::AbstractVector{<:AbstractMatrix},
     inds::AbstractVector{<:Integer},
@@ -81,6 +84,7 @@ function operation(
     onsite_operation(mats, inds, base, len)
 end
 #-----------------------------------------------------------------------------------------------------
+export trans_inv_operation
 function trans_inv_operation(
     mat::AbstractMatrix,
     ind::AbstractVector{<:Integer},
@@ -151,6 +155,7 @@ end
 #-----------------------------------------------------------------------------------------------------
 # Apply to matrix
 #-----------------------------------------------------------------------------------------------------
+export mul!
 function mul!(
     mat::AbstractMatrix, 
     op::Operation, 
@@ -176,6 +181,7 @@ end
 #-----------------------------------------------------------------------------------------------------
 # General multiplying
 #-----------------------------------------------------------------------------------------------------
+export mul
 function mul(
     op::Operation, 
     vom::AbstractVecOrMat{T}
@@ -196,6 +202,7 @@ end
 #-----------------------------------------------------------------------------------------------------
 # Fill matrix
 #-----------------------------------------------------------------------------------------------------
+export fillmat!
 function fillmat!(
     mat::AbstractMatrix, 
     op::Operation
