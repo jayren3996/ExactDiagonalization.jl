@@ -9,9 +9,8 @@ iSy(D::Integer) = (sp=Sp(D); (sp-sp')/2)
 Sy(D::Integer) = (sp=Sp(D); 0.5im*(sp'-sp))
 Sz(D::Integer) = (J=(D-1)/2; sparse(1:D,1:D, J:-1:-J))
 #-----------------------------------------------------------------------------------------------------
-# Combination
+# Dictionary
 #-----------------------------------------------------------------------------------------------------
-export spin
 function spin(
     s::Char, 
     D::Integer
@@ -26,18 +25,26 @@ function spin(
     end
 end
 #-----------------------------------------------------------------------------------------------------
-function spin(
-    s::Char, 
-    D::Integer, 
-    L::Integer
-)
-    sop = spin(s, D)
-    operation(fill(sop, L), 1:L, D, L)
-end
+# General spin matrix
 #-----------------------------------------------------------------------------------------------------
-function spin(
+export spinmat
+function spinmat(
     s::String, 
     D::Integer
 ) 
     kron([spin(si,D) for si in s]...)
 end
+#-----------------------------------------------------------------------------------------------------
+# General spin operation
+#-----------------------------------------------------------------------------------------------------
+export spinopt
+function spinopt(
+    s::Char, 
+    D::Integer, 
+    L::Integer
+)
+    sop = spin(s, D)
+    onsite_operation(sop, L)
+end
+#-----------------------------------------------------------------------------------------------------
+

@@ -4,8 +4,8 @@ using SparseArrays
 #--- Import test functions
 include("../src/ExactDiagonalization.jl")
 import .ExactDiagonalization: basis, index, change!, copy, view
-import .ExactDiagonalization: Operator, operation, fillvec!, fillmat!, mul!, mul
-import .ExactDiagonalization: spin
+import .ExactDiagonalization: Operator, operation, onsite_operation, addtovec!, addtovecs!, fillmat!, mul, mul!
+import .ExactDiagonalization: spin, spinmat, spinopt
 import .ExactDiagonalization: Operation, covmat
 #--- Test Basis
 @testset "Basis" begin
@@ -27,33 +27,33 @@ import .ExactDiagonalization: Operation, covmat
     @test index(b1) == 47
 end
 #--- Test Operators
-@testset "Operator" begin
+@testset "Operation" begin
     m1 = rand(3,3)
     m2 = rand(3,3)
-    mc = rand(ComplexF32,3,3)
+    mc = rand(ComplexF32, 3, 3)
     k13 = kron(m1, I(3), m2, I(3))       # answer
     ktt = k13 + kron(I(3), m1, m2, I(3)) # answer
     ktc = k13 + kron(I(3), m2, mc, I(3)) # answer
     op13 = Operator(kron(m1,m2), [1,3])
-    ot13 = operation([kron(m1,m2)],[[1,3]], 3, 4)
-    ott = operation([kron(m1,m2), kron(m1,m2)],[[1,3],[2,3]], 3, 4)
-    otc = operation([kron(m1,m2), kron(m2,mc)],[[1,3],[2,3]], 3, 4)
-    # test fillvec! for o13
+    ot13 = operation([kron(m1,m2)],[[1,3]], 4)
+    ott = operation([kron(m1,m2), kron(m1,m2)],[[1,3],[2,3]], 4)
+    otc = operation([kron(m1,m2), kron(m2,mc)],[[1,3],[2,3]], 4)
+    # test addtovec! for o13
     vec = zeros(81)
     b = basis(3, 4)
     ind = rand(1:81)
     change!(b, ind)
-    fillvec!(vec, op13, b)
+    addtovec!(vec, op13, b)
     @test vec ≈ k13[:, ind] atol=1e-5
     # test fillvec! for o13
     vec = zeros(81)
     ind = rand(1:81)
-    fillvec!(vec,ot13,ind)
+    addtovec!(vec,ot13,ind)
     @test vec ≈ k13[:, ind] atol=1e-5
     # test fillvec! for ott
     vec = zeros(81)
     ind = rand(1:81)
-    fillvec!(vec,ott,ind)
+    addtovec!(vec,ott,ind)
     @test vec ≈ ktt[:, ind] atol=1e-5
     # test fillmat! for ott
     mat = zeros(81,81)
@@ -92,9 +92,9 @@ end
     mx = kron(sx,I(9)) + kron(I(3), sx, I(3)) + kron(I(9), sx)
     my = kron(sy,I(9)) + kron(I(3), sy, I(3)) + kron(I(9), sy)
     mz = kron(sz,I(9)) + kron(I(3), sz, I(3)) + kron(I(9), sz)
-    opx = spin('x', 3, 3)
-    opy = spin('Y', 3, 3)
-    opz = spin('z', 3, 3)
+    opx = spinopt('x', 3, 3)
+    opy = spinopt('Y', 3, 3)
+    opz = spinopt('z', 3, 3)
     ex = Diagonal(ones(27))
     ey = Diagonal(ones(27))
     ez = Diagonal(ones(27))
@@ -115,7 +115,7 @@ end
     @test mz^2*rmat ≈ mul(opz,mul(opz,rmat)) atol=1e-5
     # test xyz
     m1 = kron(sx,sy,sz)
-    m2 = spin("xYz",3)
+    m2 = spinmat("xYz",3)
     @test m1 ≈ m2 atol=1e-5
 end
 
@@ -125,18 +125,18 @@ end
     rl = randn(12*l)
     for i=1:l
         j = (i-1)*12
-        ol[j+ 1] = operation([spin("1x",2)],[[i,i%l+1]],2,10)
-        ol[j+ 2] = operation([spin("1y",2)],[[i,i%l+1]],2,10)
-        ol[j+ 3] = operation([spin("1z",2)],[[i,i%l+1]],2,10)
-        ol[j+ 4] = operation([spin("xx",2)],[[i,i%l+1]],2,10)
-        ol[j+ 5] = operation([spin("xy",2)],[[i,i%l+1]],2,10)
-        ol[j+ 6] = operation([spin("xz",2)],[[i,i%l+1]],2,10)
-        ol[j+ 7] = operation([spin("yx",2)],[[i,i%l+1]],2,10)
-        ol[j+ 8] = operation([spin("yy",2)],[[i,i%l+1]],2,10)
-        ol[j+ 9] = operation([spin("yz",2)],[[i,i%l+1]],2,10)
-        ol[j+10] = operation([spin("zx",2)],[[i,i%l+1]],2,10)
-        ol[j+11] = operation([spin("zy",2)],[[i,i%l+1]],2,10)
-        ol[j+12] = operation([spin("zz",2)],[[i,i%l+1]],2,10)
+        ol[j+ 1] = operation([spinmat("1x",2)],[[i,i%l+1]],10)
+        ol[j+ 2] = operation([spinmat("1y",2)],[[i,i%l+1]],10)
+        ol[j+ 3] = operation([spinmat("1z",2)],[[i,i%l+1]],10)
+        ol[j+ 4] = operation([spinmat("xx",2)],[[i,i%l+1]],10)
+        ol[j+ 5] = operation([spinmat("xy",2)],[[i,i%l+1]],10)
+        ol[j+ 6] = operation([spinmat("xz",2)],[[i,i%l+1]],10)
+        ol[j+ 7] = operation([spinmat("yx",2)],[[i,i%l+1]],10)
+        ol[j+ 8] = operation([spinmat("yy",2)],[[i,i%l+1]],10)
+        ol[j+ 9] = operation([spinmat("yz",2)],[[i,i%l+1]],10)
+        ol[j+10] = operation([spinmat("zx",2)],[[i,i%l+1]],10)
+        ol[j+11] = operation([spinmat("zy",2)],[[i,i%l+1]],10)
+        ol[j+12] = operation([spinmat("zz",2)],[[i,i%l+1]],10)
     end
     function ham(cl,ol)
         nol = .*(cl,ol)
