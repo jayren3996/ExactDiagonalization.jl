@@ -31,7 +31,10 @@ export spinmat
 function spinmat(
     s::String, 
     D::Integer
-) 
+)
+    if length(s) == 1
+        return spin(s[1],D)
+    end
     kron([spin(si,D) for si in s]...)
 end
 #-----------------------------------------------------------------------------------------------------
