@@ -63,7 +63,8 @@ function entropy(
     i::Integer
 )
     base = Int(length(v)^(1/l))
-    m = reshape(a, base^i, :)
+    m = reshape(v, base^i, :)
     s = svdvals(m)
-    - dot(s, log.(s))
+    st = s[s .> 1e-10]
+    - dot(st, log.(st))
 end
