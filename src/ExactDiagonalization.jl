@@ -13,7 +13,7 @@ import Base.:/
 
 include("Basis.jl")
 include("Operation.jl")
-include("Correlation.jl")
+include("Measure.jl")
 include("Spin.jl")
 
 end # module ExactDiagonalization
