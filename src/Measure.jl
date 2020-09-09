@@ -14,7 +14,7 @@ function measure(
     o2::Operation,
     v::AbstractVecOrMat
 )
-    dot(v, mul(o1, mul(o2, v)))
+    dot(mul(o1, v), mul(o2, v))
 end
 #-----------------------------------------------------------------------------------------------------
 export covmat
@@ -50,6 +50,44 @@ function covmat(
     for i=1:n 
         for j=i:n 
             cm[i,j] = real(measure(ol[i], ol[j], v))/num - am[i] * am[j]
+        end
+    end
+    Hermitian(cm)
+end
+#-----------------------------------------------------------------------------------------------------
+export covmatc
+function covmat(
+    ol::Vector{<:Operation}, 
+    v::AbstractVector
+)
+    n = length(ol)
+    am = Vector{ComplexF64}(undef, n)
+    cm = Matrix{ComplexF64}(undef, n, n)
+    for i=1:n
+        am[i] = measure(ol[i], v)
+    end
+    for i=1:n 
+        for j=i:n 
+            cm[i,j] = measure(ol[i], ol[j], v) - conj(am[i]) * am[j]
+        end
+    end
+    Hermitian(cm)
+end
+#-----------------------------------------------------------------------------------------------------
+function covmatc(
+    ol::Vector{<:Operation}, 
+    v::AbstractMatrix
+)
+    n = length(ol)
+    am = Vector{ComplexF64}(undef, n)
+    cm = Matrix{ComplexF64}(undef, n, n)
+    num = size(v, 2)
+    for i=1:n
+        am[i] = measure(ol[i], v)/num
+    end
+    for i=1:n
+        for j=i:n
+            cm[i,j] = measure(ol[i], ol[j], v)/num - conj(am[i]) * am[j]
         end
     end
     Hermitian(cm)
