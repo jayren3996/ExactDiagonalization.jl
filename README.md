@@ -165,10 +165,12 @@ It return an operation which is the sum of the same spin operators.
 The function `measure` returns 1-point or 2-point expectation value:
 
 ```julia
+# return ⟨v|O₁|v⟩
 function measure(
     o::Operation, 
     v::AbstractVecOrMat
 )
+# return  ⟨v|(O₁')O₂|v⟩
 function measure(
     o1::Operation, 
     o2::Operation,
@@ -176,20 +178,23 @@ function measure(
 )
 ```
 
-The function `covmat` returns the covariant matrix of a given list of operations:
+The function `covmat` returns the covariant matrix of a given list of (Hermitian) operations:
 
 ```julia
 function covmat(
     ol::Vector{<:Operation}, 
-    v::AbstractVector
-)
-function covmat(
-    ol::Vector{<:Operation}, 
-    v::AbstractMatrix
+    v::AbstractVecOrMat
 )
 ```
 
-In the definition, `v` could be a vector, or a set of orthogonal vecotrs represented by a matrix.
+In the definition, `v` could be a vector, or a set of orthogonal vecotrs represented by a matrix. For non-Hermitian operations, use the alternative function ```covmatc```
+
+```julia
+function covmatc(
+    ol::Vector{<:Operation}, 
+    v::AbstractVecOrMat
+)
+```
 
 The function `entropy` returns the entanglement entropy of the given state:
 
@@ -202,3 +207,16 @@ function entropy(
 ```
 
 The input `v` is the many-body vecotr, `l` is the size of the system, and `i` is the index of the site at which the system is cut.
+
+## Miscellaneous
+
+`ExactDiagonalization` provides a function ```krylovspace``` for computing Krylov space from an operator and a linear space (represented by a vector or a matrix):
+
+```julia
+function krylovspace(
+    H, 
+    vs::AbstractVecOrMat; 
+    rtol::Real=1e-3
+)
+```
+
