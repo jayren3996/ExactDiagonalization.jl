@@ -81,11 +81,14 @@ export operation
 function operation(
     mats::AbstractVector{<:AbstractMatrix},
     inds::AbstractVector{<:AbstractVector},
-    len::Integer;
-    base::Int64 = 0
+    len::Integer=0;
+    base::Int64=0
 )
     if base == 0
         base = Int(size(mats[1], 1)^(1/length(inds[1])))
+    end
+    if len == 0
+        len = maximum(maximum.(inds))
     end
     b = basis(base, len)
     opts = [Operator(mats[i],inds[i]) for i=1:length(mats)]

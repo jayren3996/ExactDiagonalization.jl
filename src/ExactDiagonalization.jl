@@ -23,7 +23,7 @@ function reducespace(
     rtol::Real=1e-3
 )
     mat = vs' * vs
-    e,v = eigh(mat)
+    e,v = eigen(Hermitian(mat))
     pos = e .> rtol
     ep = e[pos]
     vp = v[:,pos]
