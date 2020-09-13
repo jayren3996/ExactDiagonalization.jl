@@ -56,7 +56,7 @@ function covmat(
 end
 #-----------------------------------------------------------------------------------------------------
 export covmatc
-function covmat(
+function covmatc(
     ol::Vector{<:Operation}, 
     v::AbstractVector
 )
