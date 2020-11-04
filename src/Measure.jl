@@ -10,7 +10,7 @@ function measure(
 end
 #-----------------------------------------------------------------------------------------------------
 function measure(
-    o1::Operation, 
+    o1::Operation,
     o2::Operation,
     v::AbstractVecOrMat
 )

@@ -45,15 +45,17 @@ end
     change!(b, ind)
     addtovec!(vec, op13, b)
     @test vec ≈ k13[:, ind] atol=1e-5
-    # test fillvec! for o13
+    # test addtovec! for ot13
     vec = zeros(81)
     ind = rand(1:81)
-    addtovec!(vec,ot13,ind)
+    change!(ot13.basis, ind)
+    addtovec!(vec,ot13)
     @test vec ≈ k13[:, ind] atol=1e-5
-    # test fillvec! for ott
+    # test addtovec! for ott
     vec = zeros(81)
     ind = rand(1:81)
-    addtovec!(vec,ott,ind)
+    change!(ott.basis, ind)
+    addtovec!(vec,ott)
     @test vec ≈ ktt[:, ind] atol=1e-5
     # test fillmat! for ott
     mat = zeros(81,81)

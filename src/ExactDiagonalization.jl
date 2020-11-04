@@ -13,60 +13,50 @@ import Base.:/
 
 include("Basis.jl")
 include("Operation.jl")
+include("Operation_construct.jl")
 include("Measure.jl")
 include("Spin.jl")
 #-----------------------------------------------------------------------------------------------------
 # Krylov space
 #-----------------------------------------------------------------------------------------------------
 function reducespace(
-    vs::AbstractMatrix; 
+    vector_space::AbstractMatrix; 
     rtol::Real=1e-3
 )
-    mat = vs' * vs
-    e,v = eigen(Hermitian(mat))
-    pos = e .> rtol
-    ep = e[pos]
-    vp = v[:,pos]
-    nvs = vs * vp
-    for i=1:length(ep)
-        nvs[:,i] ./= sqrt(ep[i])
+    mat = vector_space' * vector_space
+    vals, vecs = eigen(Hermitian(mat))
+    pos = vals .> rtol
+    vals_pos = vals[pos]
+    vecs_pos = vecs[:, pos]
+    null_vector_space = vector_space * vecs_pos
+    for i = 1:length(vals_pos)
+        null_vector_space[:, i] ./= sqrt(vals_pos[i])
     end
-    nvs
+    return null_vector_space
 end
-#-----------------------------------------------------------------------------------------------------
-function reducespace(
-    v::AbstractVector; 
-    rtol::Real=1e-3
-)
-    vs = reshape(v,:,1)
-    reducespace(vs, rtol=rtol)
-end
+# Special case for single vector
+reducespace(v::AbstractVector) = normalize(v)
 #-----------------------------------------------------------------------------------------------------
 export krylovspace
 function krylovspace(
     H, 
-    vs::AbstractMatrix; 
+    vector_space::AbstractMatrix; 
     rtol::Real=1e-3
 )
-    r = rank(vs)
-    v = reducespace(hcat(vs, H * vs), rtol=rtol)
-    nr = size(v,2)
-    while nr > r
-        r = nr
-        v = reducespace(hcat(v, H * v), rtol=rtol)
-        nr = size(v,2)
+    vs_rank = rank(vector_space)
+    cat_space = hcat(vector_space, H * vector_space)
+    new_space = reducespace(cat_space, rtol=rtol)
+    new_rank = size(new_space, 2)
+    while new_space > vs_rank
+        vs_rank = new_rank
+        cat_space = hcat(new_space, H * new_space)
+        new_space = reducespace(cat_space, rtol=rtol)
+        new_rank = size(new_space, 2)
     end
-    v
+    return new_space
 end
-#-----------------------------------------------------------------------------------------------------
-function krylovspace(
-    H, 
-    v::AbstractVector; 
-    rtol::Real=1e-3
-)
-    vs = reshape(v,:,1)
-    krylovspace(H, vs, rtol=rtol)
-end
+# Special case for vector
+krylovspace(H, v::AbstractVector; rtol::Real=1e-3) = krylovspace(H, reshape(v, :, 1), rtol=rtol)
 
 
 end # module ExactDiagonalization

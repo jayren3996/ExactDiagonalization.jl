@@ -1,7 +1,7 @@
 name = "ExactDiagonalization"
 uuid = "542302b3-cc4d-4e48-b94a-05d0aa837458"
 authors = ["JayRen <jieren3996@foxmail.com>"]
-version = "0.2.2"
+version = "0.2.3"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"

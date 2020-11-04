@@ -1,12 +1,20 @@
-"""
-Functions for basis.
+#-----------------------------------------------------------------------------------------------------
+# Functions for "Basis"
 
-The core structure of ExactDiagonalization.jl is the mapping between different
-Basis objects.
+# The "Basis" object is used to label product states:
+
+# 1. A single digit starts from 0, and ends with (base-1)
+# 2. The index number starts from 1, and ends with (base^len)
+# 3. Digits are read from left to right, i.e., the left digits have greater weights
+#-----------------------------------------------------------------------------------------------------
 """
-#-----------------------------------------------------------------------------------------------------
-# Type: Operator
-#-----------------------------------------------------------------------------------------------------
+    Basis{T<:AbstractVector{<:Integer}} 
+
+Type that contains 3 fields:
+1. bits: vector of integer represent the product states
+2. base: dimension of local Hilbert space
+3. len : size of the product state
+"""
 struct Basis{
     T<:AbstractVector{<:Integer}
 }
@@ -15,78 +23,107 @@ struct Basis{
     len::Int64
 end
 #-----------------------------------------------------------------------------------------------------
-# Initiation
+# Initiations of "Basis":
+
+# 1. Initiate with zero-bits.
+# 2. Initiate with a given bits.
 #-----------------------------------------------------------------------------------------------------
+# Initiate zero basis
 function basis(
     base::Integer, 
     len::Integer
 )
-    Basis(zeros(Int64, len), Int64(base), Int64(len))
+    return Basis(zeros(Int64, len), Int64(base), Int64(len))
 end
-#-----------------------------------------------------------------------------------------------------
+
+# Initiate with given bits
 function basis(
     bits::AbstractVector{<:Integer}, 
     base::Integer
 )
-    Basis(bits, Int64(base), length(bits))
+    return Basis(bits, Int64(base), length(bits))
 end
 #-----------------------------------------------------------------------------------------------------
-# Convertion between index numbers and bits lists
+# Convertion between index numbers and bits lists:
+
+# 1. List of bits -> index number
+# 2. Index number -> list of bits
 #-----------------------------------------------------------------------------------------------------
+# List of bits -> index number
 function list2num(
-    bits::AbstractVector, 
+    bits::AbstractVector{<:Integer}, 
     base::Integer, 
     len::Integer
 )
-    sum(bits[i] * base^(len - i) for i = 1:len) + 1
+    # Left ⟶ right
+    # 1st digit : base^(len-1)
+    # ith digit: base^(len - i)
+    # last digit: 1
+    # Since (0...0) ⟶ 1, we add 1 to the result
+    return sum(bits[i] * base^(len - i) for i = 1:len) + 1
 end
-#-----------------------------------------------------------------------------------------------------
+
+# Index number -> list of bits
 function num2list!(
-    bits::AbstractVector,
+    bits::AbstractVector{<:Integer},
     index::Integer,
     base::Integer,
     len::Integer,
 )
-    i = index - 1
-    for j = 1:len
-        n, i = divrem(i, base^(len - j))
-        bits[j] = n
+    # Since 1 ⟶ (0...0), we substract 1 from the input
+    # The result is remaining_mumber
+    remaining_number = index - 1
+    # Iterate from left ⟶ right, labeled by i
+    for i = 1:len
+        # remaining_mumber = ith_digit * base^(len-i) + next_remaining_number
+        # Use divrem function to get ith_digit & next_remaining_number
+        ith_digit, remaining_number = divrem(remaining_number, base^(len - i))
+        bits[i] = ith_digit
     end
+    return nothing
 end
 #-----------------------------------------------------------------------------------------------------
-# Indexing
+# Functions defined on "Basis":
+
+# 1. index  : Get the index of a given "Basis"
+# 2. change!: Change the digits of a "Basis", given:
+#    a. list of digits
+#    b. index number
+# 3. copy   : Copy a "Basis"
+# 4. view   : Get a view on part of the "Basis", the view is also a "Basis".
 #-----------------------------------------------------------------------------------------------------
-function index(b::Basis)
-    list2num(b.bits, b.base, b.len)
+function index(
+    b::Basis
+)
+    return list2num(b.bits, b.base, b.len)
 end
-#-----------------------------------------------------------------------------------------------------
-# Change basis
-#-----------------------------------------------------------------------------------------------------
+
 function change!(
     b::Basis, 
     index::Integer
 )
     num2list!(b.bits, index, b.base, b.len)
+    return nothing
 end
-#-----------------------------------------------------------------------------------------------------
+
 function change!(
     b::Basis, 
     bits::AbstractVector{<:Integer}
 )
     b.bits .= bits
+    return nothing
 end
-#-----------------------------------------------------------------------------------------------------
-# Copy Basis
-#-----------------------------------------------------------------------------------------------------
-function copy(b::Basis)
-    Basis(copy(b.bits), b.base, b.len)
+
+function copy(
+    b::Basis
+)
+    return Basis(copy(b.bits), b.base, b.len)
 end
-#-----------------------------------------------------------------------------------------------------
-# View Basis
-#-----------------------------------------------------------------------------------------------------
+
 function view(
     b::Basis, 
     inds::AbstractVector
 )
-    Basis(view(b.bits, inds), b.base, length(inds))
+    basis_view = Basis(view(b.bits, inds), b.base, length(inds))
+    return basis_view
 end
