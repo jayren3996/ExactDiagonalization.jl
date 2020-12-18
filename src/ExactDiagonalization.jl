@@ -47,7 +47,7 @@ function krylovspace(
     cat_space = hcat(vector_space, H * vector_space)
     new_space = reducespace(cat_space, rtol=rtol)
     new_rank = size(new_space, 2)
-    while new_space > vs_rank
+    while new_rank > vs_rank
         vs_rank = new_rank
         cat_space = hcat(new_space, H * new_space)
         new_space = reducespace(cat_space, rtol=rtol)
