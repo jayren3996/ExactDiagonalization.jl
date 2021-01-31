@@ -60,7 +60,13 @@ function list2num(
     # ith digit: base^(len - i)
     # last digit: 1
     # Since (0...0) ⟶ 1, we add 1 to the result
-    return sum(bits[i] * base^(len - i) for i = 1:len) + 1
+    num = bits[len]
+    basen = 1
+    for i = 1:len-1
+        basen *= base
+        num += bits[len-i] * basen
+    end
+    return num + 1
 end
 
 # Index number -> list of bits
