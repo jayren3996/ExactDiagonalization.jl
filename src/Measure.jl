@@ -6,7 +6,7 @@ function measure(
     o::Operation, 
     v::AbstractVecOrMat
 )
-    dot(v, mul(o, v))
+    dot(v, o * v)
 end
 #-----------------------------------------------------------------------------------------------------
 function measure(
@@ -14,7 +14,7 @@ function measure(
     o2::Operation,
     v::AbstractVecOrMat
 )
-    dot(mul(o1, v), mul(o2, v))
+    dot(o1 * v, o2 * v)
 end
 #-----------------------------------------------------------------------------------------------------
 export covmat

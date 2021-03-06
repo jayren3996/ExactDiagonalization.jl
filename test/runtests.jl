@@ -4,8 +4,8 @@ using SparseArrays
 #--- Import test functions
 include("../src/ExactDiagonalization.jl")
 import .ExactDiagonalization: basis, index, change!, copy, view
-import .ExactDiagonalization: Operator, operation, onsite_operation, addtovec!, addtovecs!, fillmat!, mul, mul!
-import .ExactDiagonalization: spin, spinmat, spinopt
+import .ExactDiagonalization: Operator, operation, onsite_operation, addtovec!, addtovecs!, fillmat!
+import .ExactDiagonalization: spin
 import .ExactDiagonalization: Operation, covmat
 #--- Test Basis
 @testset "Basis" begin
@@ -74,50 +74,50 @@ end
     # test mul
     vec = rand(81)
     mat = rand(81,3)
-    @test mul(ott, vec) ≈ ktt * vec atol=1e-5
-    @test mul(ott, mat) ≈ ktt * mat atol=1e-5
-    @test mul(otc, mat) ≈ ktc * mat atol=1e-5
+    @test ott * vec ≈ ktt * vec atol=1e-5
+    @test ott * mat ≈ ktt * mat atol=1e-5
+    @test otc * mat ≈ ktc * mat atol=1e-5
     # test *
     @test ott * mat ≈ ktt * mat atol=1e-5
     @test otc * mat ≈ ktc * mat atol=1e-5
 end
 
 @testset "Spin" begin
-    sx = spin('x', 3)
-    sy = spin('Y', 3)
-    sz = spin('z', 3)
+    sx = spin((1,"x"), D=3)
+    sy = spin((-1im,"y"), D=3) |> real
+    sz = spin((1,"z"), D=3)
     # check single spin operators
     @test sx ≈ [0 sqrt(2) 0;sqrt(2) 0 sqrt(2);0 sqrt(2) 0] ./ 2
     @test sy ≈ [0 sqrt(2) 0;-sqrt(2) 0 sqrt(2);0 -sqrt(2) 0] ./ 2
     @test sz ≈ Diagonal([1,0,-1])
     # 3-site spin
-    mx = kron(sx,I(9)) + kron(I(3), sx, I(3)) + kron(I(9), sx)
-    my = kron(sy,I(9)) + kron(I(3), sy, I(3)) + kron(I(9), sy)
-    mz = kron(sz,I(9)) + kron(I(3), sz, I(3)) + kron(I(9), sz)
-    opx = spinopt('x', 3, 3)
-    opy = spinopt('Y', 3, 3)
-    opz = spinopt('z', 3, 3)
-    ex = Diagonal(ones(27))
-    ey = Diagonal(ones(27))
-    ez = Diagonal(ones(27))
+    mx = kron(sx,I(9)) + kron(I(3), sx, I(3)) + kron(I(9), sx) |> Array
+    my = kron(sy,I(9)) + kron(I(3), sy, I(3)) + kron(I(9), sy) |> Array
+    mz = kron(sz,I(9)) + kron(I(3), sz, I(3)) + kron(I(9), sz) |> Array
+    opx = onsite_operation( spin((1,"x"), D=3), 3)
+    opy = onsite_operation( spin((-1im,"y"), D=3) |> real, 3)
+    opz = onsite_operation( spin((1,"z"), D=3), 3)
+    ex = Diagonal(ones(27)) |> Array
+    ey = Diagonal(ones(27)) |> Array
+    ez = Diagonal(ones(27)) |> Array
     # test mul
     rmat = rand(ComplexF32, 27,27)
-    @test mx ≈ mul(opx,ex) atol=1e-5
-    @test my ≈ mul(opy,ey) atol=1e-5
-    @test mz ≈ mul(opz,ez) atol=1e-5
-    @test mx*rmat ≈ mul(opx,rmat) atol=1e-5
-    @test my*rmat ≈ mul(opy,rmat) atol=1e-5
-    @test mz*rmat ≈ mul(opz,rmat) atol=1e-5
+    @test mx ≈ opx * ex atol=1e-5
+    @test my ≈ opy * ey atol=1e-5
+    @test mz ≈ opz * ez atol=1e-5
+    @test mx*rmat ≈ opx * rmat atol=1e-5
+    @test my*rmat ≈ opy * rmat atol=1e-5
+    @test mz*rmat ≈ opz * rmat atol=1e-5
     # test mulmul
-    @test mx^2 ≈ mul(opx,mul(opx,ex)) atol=1e-5
-    @test my^2 ≈ mul(opy,mul(opy,ey)) atol=1e-5
-    @test mz^2 ≈ mul(opz,mul(opz,ez)) atol=1e-5
-    @test mx^2*rmat ≈ mul(opx,mul(opx,rmat)) atol=1e-5
-    @test my^2*rmat ≈ mul(opy,mul(opy,rmat)) atol=1e-5
-    @test mz^2*rmat ≈ mul(opz,mul(opz,rmat)) atol=1e-5
+    @test mx^2 ≈ opx * (opx * ex) atol=1e-5
+    @test my^2 ≈ opy * (opy * ey) atol=1e-5
+    @test mz^2 ≈ opz * (opz * ez) atol=1e-5
+    @test mx^2*rmat ≈ opx * (opx * rmat) atol=1e-5
+    @test my^2*rmat ≈ opy * (opy * rmat) atol=1e-5
+    @test mz^2*rmat ≈ opz * (opz * rmat) atol=1e-5
     # test xyz
     m1 = kron(sx,sy,sz)
-    m2 = spinmat("xYz",3)
+    m2 = spin((-1im,"xyz"), D=3) |> real
     @test m1 ≈ m2 atol=1e-5
 end
 
@@ -127,18 +127,18 @@ end
     rl = randn(12*l)
     for i=1:l
         j = (i-1)*12
-        ol[j+ 1] = operation([spinmat("1x",2)],[[i,i%l+1]],10)
-        ol[j+ 2] = operation([spinmat("1y",2)],[[i,i%l+1]],10)
-        ol[j+ 3] = operation([spinmat("1z",2)],[[i,i%l+1]],10)
-        ol[j+ 4] = operation([spinmat("xx",2)],[[i,i%l+1]],10)
-        ol[j+ 5] = operation([spinmat("xy",2)],[[i,i%l+1]],10)
-        ol[j+ 6] = operation([spinmat("xz",2)],[[i,i%l+1]],10)
-        ol[j+ 7] = operation([spinmat("yx",2)],[[i,i%l+1]],10)
-        ol[j+ 8] = operation([spinmat("yy",2)],[[i,i%l+1]],10)
-        ol[j+ 9] = operation([spinmat("yz",2)],[[i,i%l+1]],10)
-        ol[j+10] = operation([spinmat("zx",2)],[[i,i%l+1]],10)
-        ol[j+11] = operation([spinmat("zy",2)],[[i,i%l+1]],10)
-        ol[j+12] = operation([spinmat("zz",2)],[[i,i%l+1]],10)
+        ol[j+ 1] = operation([spin((1,"1x",2),D=2)],[[i,i%l+1]],10)
+        ol[j+ 2] = operation([spin((1,"1y",2),D=2)],[[i,i%l+1]],10)
+        ol[j+ 3] = operation([spin((1,"1z",2),D=2)],[[i,i%l+1]],10)
+        ol[j+ 4] = operation([spin((1,"xx",2),D=2)],[[i,i%l+1]],10)
+        ol[j+ 5] = operation([spin((1,"xy",2),D=2)],[[i,i%l+1]],10)
+        ol[j+ 6] = operation([spin((1,"xz",2),D=2)],[[i,i%l+1]],10)
+        ol[j+ 7] = operation([spin((1,"yx",2),D=2)],[[i,i%l+1]],10)
+        ol[j+ 8] = operation([spin((1,"yy",2),D=2)],[[i,i%l+1]],10)
+        ol[j+ 9] = operation([spin((1,"yz",2),D=2)],[[i,i%l+1]],10)
+        ol[j+10] = operation([spin((1,"zx",2),D=2)],[[i,i%l+1]],10)
+        ol[j+11] = operation([spin((1,"zy",2),D=2)],[[i,i%l+1]],10)
+        ol[j+12] = operation([spin((1,"zz",2),D=2)],[[i,i%l+1]],10)
     end
     function ham(cl,ol)
         nol = .*(cl,ol)

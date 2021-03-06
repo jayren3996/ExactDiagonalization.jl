@@ -16,33 +16,24 @@ Type that contains 3 fields:
 3. len : size of the product state
 """
 struct Basis{
-    T<:AbstractVector{<:Integer}
+    Tbits <: Union{Vector{Int64}, SubArray{Int64, 1, Array{Int64, 1}} },
+    Tbase <: Integer,
+    Tlen <: Integer
 }
-    bits::T
-    base::Int64
-    len::Int64
+    bits::Tbits
+    base::Tbase
+    len::Tlen
 end
+
 #-----------------------------------------------------------------------------------------------------
 # Initiations of "Basis":
 
 # 1. Initiate with zero-bits.
 # 2. Initiate with a given bits.
 #-----------------------------------------------------------------------------------------------------
-# Initiate zero basis
-function basis(
-    base::Integer, 
-    len::Integer
-)
-    return Basis(zeros(Int64, len), Int64(base), Int64(len))
-end
+basis(base::Integer, len::Integer) = Basis(zeros(Int64, len), base, len)
+basis(bits::Vector{<:Integer}, base::Integer) = Basis(bits, base, length(bits))
 
-# Initiate with given bits
-function basis(
-    bits::AbstractVector{<:Integer}, 
-    base::Integer
-)
-    return Basis(bits, Int64(base), length(bits))
-end
 #-----------------------------------------------------------------------------------------------------
 # Convertion between index numbers and bits lists:
 
@@ -86,8 +77,8 @@ function num2list!(
         ith_digit, remaining_number = divrem(remaining_number, base^(len - i))
         bits[i] = ith_digit
     end
-    return nothing
 end
+
 #-----------------------------------------------------------------------------------------------------
 # Functions defined on "Basis":
 
@@ -98,38 +89,10 @@ end
 # 3. copy   : Copy a "Basis"
 # 4. view   : Get a view on part of the "Basis", the view is also a "Basis".
 #-----------------------------------------------------------------------------------------------------
-function index(
-    b::Basis
-)
-    return list2num(b.bits, b.base, b.len)
-end
-
-function change!(
-    b::Basis, 
-    index::Integer
-)
-    num2list!(b.bits, index, b.base, b.len)
-    return nothing
-end
-
-function change!(
-    b::Basis, 
-    bits::AbstractVector{<:Integer}
-)
+index(b::Basis) = list2num(b.bits, b.base, b.len)
+change!(b::Basis, index::Integer) = num2list!(b.bits, index, b.base, b.len)
+function change!(b::Basis, bits::Vector{<:Integer})
     b.bits .= bits
-    return nothing
 end
-
-function copy(
-    b::Basis
-)
-    return Basis(copy(b.bits), b.base, b.len)
-end
-
-function view(
-    b::Basis, 
-    inds::AbstractVector
-)
-    basis_view = Basis(view(b.bits, inds), b.base, length(inds))
-    return basis_view
-end
+copy(b::Basis) = Basis(copy(b.bits), b.base, b.len)
+view(b::Basis, inds::AbstractVector) = Basis(view(b.bits, inds), b.base, length(inds))

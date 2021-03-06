@@ -2,14 +2,9 @@ module ExactDiagonalization
 
 using LinearAlgebra
 using SparseArrays
-import Base: view, copy
+import Base: view, copy, eltype, size, Array
+import Base: +, -, *, /, sum
 import LinearAlgebra: mul!
-import Base: sum
-import Base.:+
-import Base.:-
-import Base.:*
-import Base.:/
-
 
 include("Basis.jl")
 include("Operation.jl")
