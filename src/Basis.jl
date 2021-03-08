@@ -24,59 +24,33 @@ struct Basis{
     base::Tbase
     len::Tlen
 end
-
-#-----------------------------------------------------------------------------------------------------
-# Initiations of "Basis":
-
-# 1. Initiate with zero-bits.
-# 2. Initiate with a given bits.
-#-----------------------------------------------------------------------------------------------------
+# Initiations of "Basis"
 basis(base::Integer, len::Integer) = Basis(zeros(Int64, len), base, len)
 basis(bits::Vector{<:Integer}, base::Integer) = Basis(bits, base, length(bits))
 
 #-----------------------------------------------------------------------------------------------------
 # Convertion between index numbers and bits lists:
 
+# number = base * (base * (...(base * bits[1] + bits[2])...) + bits[L-1]) + bits[L] + 1
+
 # 1. List of bits -> index number
 # 2. Index number -> list of bits
 #-----------------------------------------------------------------------------------------------------
 # List of bits -> index number
-function list2num(
-    bits::AbstractVector{<:Integer}, 
-    base::Integer, 
-    len::Integer
-)
-    # Left ⟶ right
-    # 1st digit : base^(len-1)
-    # ith digit: base^(len - i)
-    # last digit: 1
-    # Since (0...0) ⟶ 1, we add 1 to the result
-    num = bits[len]
-    basen = 1
-    for i = 1:len-1
-        basen *= base
-        num += bits[len-i] * basen
+function list2num(bits::AbstractVector{<:Integer}, base::Integer, len::Integer)
+    num = bits[1]
+    for i = 2:len
+        num = num * base + bits[i]
     end
-    return num + 1
+    num + 1
 end
-
 # Index number -> list of bits
-function num2list!(
-    bits::AbstractVector{<:Integer},
-    index::Integer,
-    base::Integer,
-    len::Integer,
-)
-    # Since 1 ⟶ (0...0), we substract 1 from the input
-    # The result is remaining_mumber
-    remaining_number = index - 1
-    # Iterate from left ⟶ right, labeled by i
-    for i = 1:len
-        # remaining_mumber = ith_digit * base^(len-i) + next_remaining_number
-        # Use divrem function to get ith_digit & next_remaining_number
-        ith_digit, remaining_number = divrem(remaining_number, base^(len - i))
-        bits[i] = ith_digit
+function num2list!(bits::AbstractVector{<:Integer}, index::Integer, base::Integer, len::Integer)
+    number = index - 1
+    for i = len:-1:2
+        number, bits[i] = divrem(number, base)
     end
+    bits[1] = number
 end
 
 #-----------------------------------------------------------------------------------------------------

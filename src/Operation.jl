@@ -5,14 +5,14 @@
 # Functions on "Operation"s are design to mimic the behavior of matrices.
 #-----------------------------------------------------------------------------------------------------
 """
-    Operator{MatType<:AbstractMatrix, IndType<:AbstractVector{<:Integer}}
+    Operator{T1<:Number, T2<:Integer}
 
 Type that contains 2 fields:
 
-1. `mat`: Matrix representation of local operator.
-2. `inds`: Index of sites the operator acts on.
+1. `mat`: Matrices representation of local operator.
+2. `inds`: Indeces of sites the operator acts on.
 """
-struct Operator{T1 <: Number, T2 <: Integer}
+struct Operator{T1<:Number, T2<:Integer}
     mat::Matrix{T1}
     inds::Vector{T2}
 end
@@ -38,33 +38,22 @@ end
 
 Elementary multiplication step. Calculate single vector element of an operator * vector.
 
-- vec  : Vector to fill
-- opt  : Operator
-- basis: Indicate the specific row
-- coeff: The vector element of input state
+- `vec`: Vector to fill
+- `opt`: Operator
+- `basis`: Indicate the specific row
+- `coeff`: The vector element of input state
 """
-function addtovec!(
-    vec::AbstractVector, 
-    opt::Operator, 
-    basis::Basis,
-    coeff::Number=1
-)
-    # Create a view on the segment of the digits
-    basis_view = view(basis, opt.inds)
-    # Get the initial index of the viewed segment
-    index_view = index(basis_view)
-    # Get the elements in row of index_view
-    opt_column = opt.mat[:, index_view] * coeff
+function addtovec!(vec::AbstractVector, opt::Operator, basis::Basis, coeff::Number=1)
+    basis_view = view(basis, opt.inds)              # Create a view on the segment of the digits
+    index_view = index(basis_view)                  # Get the initial index of the viewed segment
+    opt_column = opt.mat[:, index_view] * coeff     # Get the elements in row of index_view
     row_number = length(opt_column)
-    # Fill the vector
     for k = 1:row_number
         change!(basis_view, k)
         i = index(basis)
         vec[i] += opt_column[k]
-    end
-    # Reset the segment
-    change!(basis_view, index_view)
-    return nothing
+    end                                             # Fill the vector
+    change!(basis_view, index_view)                 # Reset the segment
 end
 #-----------------------------------------------------------------------------------------------------
 """
@@ -77,26 +66,17 @@ Elementary multiplication step. Calculate single row of matrix element of an ope
 - basis: Indicate the specific row
 - coeff: The row of matrix elements of input states
 """
-function addtovecs!(
-    vecs::AbstractMatrix, 
-    opt::Operator, 
-    basis::Basis,
-    coeff::AbstractVector{<:Number}
-)
-    
-    basis_view = view(basis, opt.inds)      # Create a view on the segment of the digits
-    index_view = index(basis_view)          # Get the initial index of the viewed segment
-    opt_column = opt.mat[:, index_view]     # Get the elements in row of index_view
-    row_number = length(opt_column)         # Fill the matrix
-    
+function addtovecs!(vecs::AbstractMatrix, opt::Operator, basis::Basis, coeff::AbstractVector{<:Number})
+    basis_view = view(basis, opt.inds)              # Create a view on the segment of the digits
+    index_view = index(basis_view)                  # Get the initial index of the viewed segment
+    opt_column = opt.mat[:, index_view]             # Get the elements in row of index_view
+    row_number = length(opt_column)                 # Fill the matrix
     for k = 1:row_number
         change!(basis_view, k)
         i = index(basis)
         vecs[i, :] += opt_column[k] * coeff
     end
-    
-    change!(basis_view, index_view)         # Reset the segment
-    return nothing
+    change!(basis_view, index_view)                 # Reset the segment
 end
 #-----------------------------------------------------------------------------------------------------
 # Type: Operation
@@ -116,8 +96,8 @@ struct Operation{T1 <: Number, T2 <: Integer, T3}
 end
 eltype(::Operation{T1, T2, T3}) where T1 where T2 where T3 = T1
 function size(opt::Operation)
-    op = opt.opts[1]
-    dim = op.base ^ op.len
+    basis = opt.basis
+    dim = basis.base ^ basis.len
     (dim, dim)
 end
 #-----------------------------------------------------------------------------------------------------
@@ -134,12 +114,7 @@ Canonical construction method for `Operation` object.
 - `len`: Specify the size of the system. Default `len=0` will induce auto deduction.
 - `base`: Quantum number of each sites. Default `base=0` will induce auto deduction.
 """
-function operation(
-    mats::AbstractVector{<:Matrix},
-    inds::AbstractVector{<:Vector},
-    len::Integer=0;
-    base::Integer=0
-)
+function operation(mats::AbstractVector{<:Matrix}, inds::AbstractVector{<:Vector}, len::Integer=0; base::Integer=0)
     B = begin
         b = base==0 ? round(Int64, size(mats[1], 1)^(1/length(inds[1]))) : Int64(base)
         l = len==0 ? maximum(maximum.(inds)) : Int64(len)
@@ -155,7 +130,7 @@ end
 /(o::Operation, c::Number) = Operation(o.opts ./ c, o.basis)
 +(o1::Operation, o2::Operation) = Operation(vcat(o1.opts, o2.opts), o1.basis)
 -(o1::Operation, o2::Operation) = Operation(vcat(o1.opts, (-1) * o2.opts), o1.basis)
-sum(ol::AbstractVector{<:Operation}) = begin
+function sum(ol::AbstractVector{<:Operation})
     basis = ol[1].basis
     opts = vcat([oi.opts for oi in ol]...)
     Operation(opts, basis)
@@ -175,17 +150,11 @@ The row information is stored in the basis of operation.
 - `opt`: Operation.
 - `coeff`: The vector element of input state.
 """
-function addtovec!(
-    vec::AbstractVector, 
-    opt::Operation, 
-    coeff::Number=1
-)
-    
+function addtovec!(vec::AbstractVector, opt::Operation, coeff::Number=1)
     basis = opt.basis
     opts = opt.opts
     num_of_opts = length(opts)
-    
-    for i = 1:num_of_opts           
+    for i = 1:num_of_opts
         addtovec!(vec, opts[i], basis, coeff)
     end # Multiply by each operator and add them all to vector
 end
@@ -200,11 +169,7 @@ The row information is stored in the basis of operation.
 - `opt`: Operation
 - `coeff`: The row of matrix elements of input states
 """
-function addtovecs!(
-    vecs::AbstractMatrix, 
-    opt::Operation, 
-    coeff::AbstractVector{<:Number}
-)
+function addtovecs!(vecs::AbstractMatrix, opt::Operation, coeff::AbstractVector{<:Number})
     basis = opt.basis
     opts = opt.opts
     num_of_opts = length(opts)
@@ -292,7 +257,6 @@ end
 Return the full matrix form of `opt`.
 """
 function Array(opt::Operation)
-    dim = opt.
     mat = zeros(eltype(opt), size(opt))
     fillmat!(mat, opt)
     mat

@@ -99,11 +99,12 @@ export entropy
 function entropy(
     v::AbstractVector, 
     l::Integer,
-    i::Integer
+    i::Integer;
+    base=0,
+    cutoff=1e-7
 )
-    base = Int(length(v)^(1/l))
+    base = base==0 ? round(Int64, length(v)^(1/l)) : base
     m = reshape(v, base^i, :)
-    s = svdvals(m)
-    st = s[s .> 1e-10]
-    - dot(st, log.(st))
+    s = svdvals(m) .^ 2
+    - sum(si * log(si) for si in s if si > cutoff)
 end

@@ -13,6 +13,7 @@ function spin_dict(D::Integer)
     s0 = sparse(1.0I, D, D)
     Dict([('+', sp), ('-', sm), ('x', sx), ('y', sy), ('z', sz), ('1', s0)])
 end
+#-----------------------------------------------------------------------------------------------------
 # Atomic spin matrix
 function spin_atom(s::String, dic::Dict)
     n = length(s)
@@ -21,6 +22,8 @@ function spin_atom(s::String, dic::Dict)
     P = mod(ny, 2) == 0 ? (-1)^(ny÷2) : (1im)^ny
     P * temp
 end
+#-----------------------------------------------------------------------------------------------------
+export spin
 """
     spin(spins; D=2)
 
