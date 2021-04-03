@@ -114,13 +114,20 @@ Canonical construction method for `Operation` object.
 - `len`: Specify the size of the system. Default `len=0` will induce auto deduction.
 - `base`: Quantum number of each sites. Default `base=0` will induce auto deduction.
 """
-function operation(mats::AbstractVector{<:Matrix}, inds::AbstractVector{<:Vector}, len::Integer=0; base::Integer=0)
+function operation(
+    mats::AbstractVector{<:AbstractMatrix}, 
+    inds::AbstractVector{<:AbstractVector}, 
+    len::Integer=0; 
+    base::Integer=0
+)
     B = begin
         b = base==0 ? round(Int64, size(mats[1], 1)^(1/length(inds[1]))) : Int64(base)
         l = len==0 ? maximum(maximum.(inds)) : Int64(len)
         basis(b, l)
     end
-    O = [Operator(mats[i], inds[i]) for i=1:length(mats)]
+    mat_type = promote_type(eltype.(mats)...)
+    ind_type = promote_type(eltype.(inds)...)
+    O = [Operator(Array{mat_type}(mats[i]), Array{ind_type}(inds[i])) for i=1:length(mats)]
     Operation(O, B)
 end
 #-----------------------------------------------------------------------------------------------------
