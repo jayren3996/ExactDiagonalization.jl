@@ -135,8 +135,14 @@ end
 #-----------------------------------------------------------------------------------------------------
 *(c::Number, o::Operation) = Operation(c .* o.opts, o.basis)
 /(o::Operation, c::Number) = Operation(o.opts ./ c, o.basis)
-+(o1::Operation, o2::Operation) = Operation(vcat(o1.opts, o2.opts), o1.basis)
--(o1::Operation, o2::Operation) = Operation(vcat(o1.opts, (-1) * o2.opts), o1.basis)
+function +(opt1::Operation, opt2::Operation)
+    mats = vcat(opt1.mat, opt2.mat)
+    inds = vcat(opt1.inds, opt2.inds)
+    len = opt1.basis.len
+    base = opt1.basis.base
+    operation(mats, inds, len, base=base)
+end
+-(o1::Operation, o2::Operation) = o1 + ((-1) * o2)
 function sum(ol::AbstractVector{<:Operation})
     basis = ol[1].basis
     opts = vcat([oi.opts for oi in ol]...)
