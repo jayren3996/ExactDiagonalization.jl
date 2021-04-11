@@ -1,4 +1,5 @@
 # ExactDiagonalization.jl
+
  Julia package for exact diagonalization.
 
 ## Installation
@@ -32,24 +33,18 @@ The `Basis` type is an inner type of the package. In most of the case we do not 
 In `ExactDiagonalization` , a many-body operator is represented by the type `Operator`:
 
 ```julia
-struct Operator{
-    MatType <: AbstractMatrix, 
-    IndType <: AbstractVector{<:Integer}
-}
-    mat::MatType
-    inds::IndType
+struct Operator{T1<:Number, T2<:Integer}
+    mat::Matrix{T1}
+    inds::Vector{T2}
 end
 ```
 
 In this definition,  the field `mat` is the matrix representation of the local operator, and the field `inds` is the indices of sites it acts on. In many case, the operator we care about is the sum of the local operator. To better deal with the sum of operator, we define another type `Operation`:
 
 ```julia
-struct Operation{
-    OptType <: AbstractVector{<:Operator}, 
-    BasType <: Basis
-}
-    opts::OptType
-    basis::BasType
+struct Operation{T1 <: Number, T2 <: Integer, T3}
+    opts::Vector{Operator{T1, T2}}
+    basis::Basis{T3}
 end
 ```
 
@@ -63,8 +58,8 @@ The general initialization for an `Operation` object is by using the function `o
 function operation(
     mats::AbstractVector{<:AbstractMatrix},
     inds::AbstractVector{<:AbstractVector},
-    len::Integer;
-    base::Int64 = 0
+    len::Integer=0;
+    base::Int64=0
 )
 ```
 
@@ -131,32 +126,18 @@ The `fillmat!` function fill the matrix `mat` using `op` . Note that `fillmat!` 
 We can directly using `*` to do the multiplycation. Or, we could use the function:
 
 ```julia
-function mul(
-    op::Operation, 
-    vom::AbstractVecOrMat{T}
-) where T <: Number
+function mul!(mat::AbstractMatrix, opt::Operation, states::AbstractMatrix)
 ```
 
 ## Spin tools
 
-We also provide two simple function related to spin-s operators. The first is `spinmat` , which gives a sparse matrix of the spin operator.
+We also provide a helper function to create spin-s operators (represented by matrices):
 
 ```julia
-function spinmat(
-    s::String, 
-    D::Integer
-)
+function spin(spins...; D::Integer=2)
 ```
 
-In the definition, `s` is the string of spin, the supported characters are `x`, `y`, `z`, `1`, `+`, `-`, `Y`. Note that `Y=iSʸ `. The other input `D` is the dimension of the matrix (`D = 2s+1`). Another function is
-
-```julia
-function spinopt(
-    s::Char, 
-    D::Integer, 
-    L::Integer
-)
-```
+In the definition, `spins` are arbituary number of tuples such as `(1.0, "xzx")`. The supported characters are `x`, `y`, `z`, `1`, `+`, `-`, `Y`. Note that `Y=iSʸ`. The other input `D` is the dimension of the matrix (`D = 2s+1`).
 
 It return an operation which is the sum of the same spin operators.
 
