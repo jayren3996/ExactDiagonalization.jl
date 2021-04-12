@@ -136,7 +136,7 @@ end
 *(c::Number, o::Operation) = Operation(c .* o.opts, o.basis)
 /(o::Operation, c::Number) = Operation(o.opts ./ c, o.basis)
 function +(opt1::Operation, opt2::Operation)
-    mats = vcat(opt1.mat, opt2.mat)
+    mats = vcat(opt1.mats, opt2.mats)
     inds = vcat(opt1.inds, opt2.inds)
     len = opt1.basis.len
     base = opt1.basis.base
