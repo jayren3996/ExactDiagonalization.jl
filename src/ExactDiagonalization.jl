@@ -38,5 +38,6 @@ include("basis/ProjectedBasis.jl")
 include("basis/TranslationalBasis.jl")
 include("Operator.jl")
 include("LinearOperation.jl")
+include("Spin.jl")
 
 end
