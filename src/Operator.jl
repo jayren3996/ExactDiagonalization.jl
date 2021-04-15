@@ -35,7 +35,7 @@ function operator(mats::AbstractVector{<:AbstractMatrix}, inds::AbstractVector{<
     Operator(M, I, B)
 end
 operator(mats::AbstractVector{<:AbstractMatrix}, inds::AbstractVector{<:Integer}, C) = operator(mats, [[i] for i in inds], C)
-operator(mat::AbstractMatrix, ind::AbstractVector{<:Integer}, C) = operator([mat], [[i] for i in ind], C)
+operator(mat::AbstractMatrix, ind::AbstractVector{<:Integer}, C) = operator([mat], [ind], C)
 operator(mats::AbstractVector{<:AbstractMatrix}, L::Integer) = operator(mats, [[i] for i in 1:L], L)
 operator(mats::AbstractVector{<:AbstractMatrix}, B::AbstractBasis) = operator(mats, [[i] for i in 1:length(B.dgt)], B)
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
