@@ -31,7 +31,7 @@ function operator(mats::AbstractVector{<:AbstractMatrix}, inds::AbstractVector{<
 end
 function operator(mats::AbstractVector{<:AbstractMatrix}, inds::AbstractVector{<:AbstractVector}, L::Integer=0)
     M, I = standard_format(mats, inds)
-    B = tensorbasis(L == 0 ? maxindex(L) : L, base=find_power(size(mats[1], 1), length(inds[1])))
+    B = tensorbasis(L == 0 ? maxindex(L) : L, base=find_base(size(mats[1], 1), length(inds[1])))
     Operator(M, I, B)
 end
 operator(mats::AbstractVector{<:AbstractMatrix}, inds::AbstractVector{<:Integer}, C) = operator(mats, [[i] for i in inds], C)
@@ -48,7 +48,7 @@ function trans_inv_operator(mat::AbstractMatrix, ind::AbstractVector{<:Integer},
     Operator(mats, inds, B)
 end
 function trans_inv_operator(mat::AbstractMatrix, ind::AbstractVector{<:Integer}, L::Integer)
-    B = tensorbasis(L, base=find_power(size(mat, 1), length(ind)))
+    B = tensorbasis(L, base=find_base(size(mat, 1), length(ind)))
     trans_inv_operator(mat, ind, B)
 end
 trans_inv_operator(mat::AbstractMatrix, M::Integer, C) = trans_inv_operator(mat, 1:M, C)
