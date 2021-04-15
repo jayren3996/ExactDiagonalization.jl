@@ -67,8 +67,8 @@ function +(opt1::Operator, opt2::Operator)
         for i = 1:n1
             spmats[i] = opt1.M[i]
         end
-        for i = n1+1:n1+n2
-            spmats[i] = opt2.M[i]
+        for i = 1:n2
+            spmats[n1+i] = opt2.M[i]
         end
         spmats
     end
@@ -90,13 +90,16 @@ standard_ind(inds::Vector{Vector{Int}}) = inds
 standard_ind(inds::AbstractVector{<:AbstractVector{<:Integer}}) = standard_ind.(inds)
 standard_format(mats, inds) = standard_mat(mats), standard_ind(inds)
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function find_power(a::Integer, b::Integer)
-    p = 0
-    while a != 1
-        a = a ÷ b
-        p += 1
+function find_base(a::Integer, b::Integer)
+    if b == 1
+        return a
+    else
+        for i=2:a
+            if i^b == a
+                return i
+            end
+        end
     end
-    p
 end
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function maxindex(v::AbstractVector{<:AbstractVector{<:Integer}})
