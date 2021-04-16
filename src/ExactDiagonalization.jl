@@ -5,7 +5,7 @@ using SparseArrays
 import Base: +, -, *, /
 import Base: eltype, view, length, size
 import Base: Array
-import LinearAlgebra: norm
+import LinearAlgebra: norm, mul!
 import SparseArrays: sparse
 #-----------------------------------------------------------------------------------------------------
 export change!, index, operator
