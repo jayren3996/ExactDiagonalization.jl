@@ -31,6 +31,23 @@ end
 #-----------------------------------------------------------------------------------------------------
 size(b::ProjectedBasis, i::Integer) = (i == 2 || i == 1) ? length(b.I) : 1
 size(b::ProjectedBasis) = (l=length(b.I); (l,l))
+
+#-----------------------------------------------------------------------------------------------------
+# Construct basis
+#-----------------------------------------------------------------------------------------------------
+export projectedbasis
+function projectedbasis(f, L::Integer; base::Integer=2)
+    dgt = zeros(Int, L)
+    I = []
+    for i = 1:base^L
+        change!(dgt, i)
+        if f(dgt)
+            append!(I, i)
+        end
+    end
+    ProjectedBasis(dgt, I, base)
+end
+
 #-----------------------------------------------------------------------------------------------------
 # Helper functions
 #-----------------------------------------------------------------------------------------------------
@@ -56,21 +73,3 @@ function binary_search(list::AbstractVector{<:Integer}, i::Integer)
     end
     c
 end
-
-#-----------------------------------------------------------------------------------------------------
-# Construct basis
-#-----------------------------------------------------------------------------------------------------
-export projectedbasis
-function projectedbasis(f, L::Integer; base::Integer=2)
-    dgt = zeros(Int, L)
-    I = []
-    for i = 1:base^L
-        change!(dgt, i)
-        if f(dgt)
-            append!(I, i)
-        end
-    end
-    ProjectedBasis(dgt, I, base)
-end
-
-
