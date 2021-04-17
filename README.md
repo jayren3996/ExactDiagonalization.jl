@@ -57,7 +57,7 @@ Array(opt::Operation)
 It can also write to a given matrix with correct dimension using function
 
 ```julia
-fillmat!(M::AbstractMatrix, opt::Operator)
+addto!(M::AbstractMatrix, opt::Operator)
 ```
 
 Note that to get correct answer, `M` should de initialized as a zero matrix.
