@@ -1,6 +1,6 @@
 # ExactDiagonalization.jl
 
-The developing version of `EDKit.jl`: https://github.com/jayren3996/EDKit.jl
+A developing version of `EDKit.jl`: https://github.com/jayren3996/EDKit.jl
 
 ## Installation
 
